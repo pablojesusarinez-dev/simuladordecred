@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Créditos · Quantum Vehículos Eléctricos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F8F7;
+    --paper:#FFFFFF;
+    --ink:#0B2027;
+    --ink-soft:#4A5D61;
+    --teal:#0EA894;
+    --teal-dark:#076B5D;
+    --teal-pale:#E3F5F1;
+    --amber:#DD9A33;
+    --amber-pale:#FBF1DF;
+    --red:#C4523F;
+    --red-pale:#FBEAE6;
+    --line:#DCE6E3;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+    padding-bottom:80px;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    margin:0;
+    color:var(--ink);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px;}
+
+  /* ---------- HEADER / HERO ---------- */
+  header.hero{
+    background:linear-gradient(180deg,#0B2027 0%,#0E2E34 100%);
+    color:#EAF4F2;
+    padding:34px 0 46px;
+    border-bottom:4px solid var(--teal);
+  }
+  .brandrow{display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.02em;color:#9FC9C1;margin-bottom:18px;}
+  .brandrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  header.hero h1{
+    font-size:clamp(28px,4vw,42px);
+    font-weight:700;
+    max-width:760px;
+    color:#fff;
+  }
+  header.hero p.lead{
+    max-width:620px;
+    color:#C4D8D4;
+    font-size:16px;
+    margin-top:14px;
+  }
+  .hero-stats{
+    display:flex;
+    gap:28px;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  .hero-stat{border-left:2px solid rgba(255,255,255,.18);padding-left:14px;}
+  .hero-stat .num{font-family:'Space Grotesk';font-size:22px;font-weight:700;color:var(--teal);}
+  .hero-stat .lab{font-size:12.5px;color:#9FC0BB;margin-top:2px;}
+
+  /* ---------- LAYOUT ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:22px;
+    margin-top:-26px;
+    align-items:start;
+  }
+  @media (max-width:880px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px;
+  }
+  .panel h2{font-size:16px;margin-bottom:4px;}
+  .panel .sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;}
+
+  .controls-panel{position:sticky;top:16px;}
+
+  label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+    margin-top:16px;
+  }
+  label:first-of-type{margin-top:0;}
+  select,input[type=number],input[type=text]{
+    width:100%;
+    padding:10px 11px;
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    font-family:'Inter';
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+  }
+  select:focus,input:focus{outline:2px solid var(--teal);outline-offset:1px;}
+
+  .field-hint{font-size:11.5px;color:#7E8F92;margin-top:4px;}
+
+  .segmented{
+    display:flex;
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    overflow:hidden;
+  }
+  .segmented button{
+    flex:1;
+    padding:9px 4px;
+    border:none;
+    background:#fff;
+    font-family:'Inter';
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-right:1.5px solid var(--line);
+  }
+  .segmented button:last-child{border-right:none;}
+  .segmented button.active{background:var(--teal);color:#fff;}
+
+  .range-row{display:flex;align-items:center;gap:10px;}
+  input[type=range]{flex:1;accent-color:var(--teal);}
+  .range-val{font-family:'Space Grotesk';font-weight:700;font-size:14px;min-width:52px;text-align:right;}
+
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:16px;}
+  .toggle-row label{margin:0;}
+  .switch{position:relative;width:40px;height:22px;background:var(--line);border-radius:20px;cursor:pointer;transition:.15s;flex-shrink:0;}
+  .switch.on{background:var(--teal);}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s;}
+  .switch.on::after{left:20px;}
+
+  .adv-toggle{
+    margin-top:18px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--teal-dark);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .adv-body{display:none;margin-top:6px;}
+  .adv-body.open{display:block;}
+
+  /* ---------- SUMMARY BAR ---------- */
+  .summary-bar{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-bottom:20px;
+  }
+  @media (max-width:700px){.summary-bar{grid-template-columns:1fr;}}
+  .summary-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .summary-card .lab{font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .summary-card .val{font-family:'Space Grotesk';font-size:20px;font-weight:700;margin-top:4px;}
+  .summary-card .sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .summary-card.highlight{border-color:var(--teal);background:var(--teal-pale);}
+  .summary-card.highlight .val{color:var(--teal-dark);}
+
+  /* ---------- WORKER TYPE ALERT ---------- */
+  .alert{
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:13.5px;
+    margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .alert.amber{background:var(--amber-pale);border:1px solid #EFCE96;color:#6B4E17;}
+  .alert.teal{background:var(--teal-pale);border:1px solid #A9E0D5;color:#0A5147;}
+  .alert svg{flex-shrink:0;margin-top:2px;}
+
+  /* ---------- BANK CARDS ---------- */
+  .bank-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    margin-bottom:16px;
+  }
+  .bank-card.best{border:2px solid var(--teal);}
+  .bank-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:14px;
+    margin-bottom:14px;
+  }
+  .bank-name-row{display:flex;align-items:center;gap:10px;}
+  .bank-swatch{width:10px;height:10px;border-radius:3px;}
+  .bank-name{font-family:'Space Grotesk';font-size:17px;font-weight:700;}
+  .badge{
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:.03em;
+    padding:3px 9px;
+    border-radius:20px;
+    background:var(--teal);
+    color:#fff;
+  }
+  .badge.warn{background:var(--amber);}
+
+  .bank-metrics{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+  @media (max-width:640px){.bank-metrics{grid-template-columns:repeat(2,1fr);}}
+  .metric .lab{font-size:11.5px;color:var(--ink-soft);font-weight:600;}
+  .metric .val{font-family:'Space Grotesk';font-size:18px;font-weight:700;margin-top:3px;}
+  .metric .val.small{font-size:14px;}
+  .metric .foot{font-size:11px;color:#8B9C9F;margin-top:2px;}
+
+  .bank-detail-toggle{
+    margin-top:16px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--teal-dark);
+    cursor:pointer;
+    user-select:none;
+  }
+  .bank-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);}
+  .bank-detail.open{display:block;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:640px){.detail-grid{grid-template-columns:1fr;}}
+  .detail-grid h4{font-size:12.5px;text-transform:none;color:var(--ink-soft);margin-bottom:8px;font-weight:700;}
+  ul.reqs{margin:0;padding-left:18px;font-size:13px;color:var(--ink);}
+  ul.reqs li{margin-bottom:5px;}
+  .flag-note{
+    font-size:12px;
+    background:var(--red-pale);
+    color:#8A3A2A;
+    border:1px solid #EFC1B5;
+    border-radius:8px;
+    padding:8px 10px;
+    margin-top:10px;
+  }
+  .info-note{
+    font-size:12px;
+    background:#F2F5F4;
+    color:var(--ink-soft);
+    border-radius:8px;
+    padding:8px 10px;
+    margin-top:10px;
+  }
+
+  footer{
+    max-width:1180px;
+    margin:36px auto 0;
+    padding:20px 20px 0;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  footer a{color:var(--teal-dark);}
+  .fine{margin-top:8px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandrow"><span class="dot"></span> QUANTUM VEHÍCULOS ELÉCTRICOS · SIMULADOR DE FINANCIAMIENTO</div>
+    <h1>¿Cuánto necesitas ganar para tu Quantum a cuotas?</h1>
+    <p class="lead">Compara las condiciones de los 5 bancos que financian vehículos eléctricos Quantum en Bolivia, y calcula el ingreso líquido mínimo que pedirían para aprobarte el crédito.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num" id="heroCuota">—</div><div class="lab">Mejor cuota mensual estimada</div></div>
+      <div class="hero-stat"><div class="num" id="heroIngreso">—</div><div class="lab">Ingreso líquido mínimo estimado</div></div>
+      <div class="hero-stat"><div class="num" id="heroBanco">—</div><div class="lab">Entidad más accesible</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- ============ CONTROLS ============ -->
+    <div class="panel controls-panel">
+      <h2>Datos del crédito</h2>
+      <div class="sub">Ajusta cualquier valor — los recálculos son instantáneos.</div>
+
+      <label for="vehicleSelect">Vehículo Quantum</label>
+      <select id="vehicleSelect"></select>
+      <div class="field-hint" id="vehicleHint"></div>
+
+      <label for="priceInput">Precio del vehículo (Bs)</label>
+      <input type="number" id="priceInput" min="0" step="500">
+
+      <label>Situación laboral del solicitante</label>
+      <div class="segmented" id="workerSeg">
+        <button data-w="dependiente" class="active">Dependiente</button>
+        <button data-w="independiente">Independiente</button>
+        <button data-w="jubilado">Jubilado / Rentista</button>
+      </div>
+
+      <label>Plazo deseado — <span id="plazoLabel">7</span> años</label>
+      <div class="range-row">
+        <input type="range" id="plazoRange" min="1" max="10" value="7" step="1">
+      </div>
+      <div class="field-hint">Cada banco tiene su propio plazo máximo; se ajusta automáticamente si tu elección lo supera.</div>
+
+      <label>% máximo del ingreso destinado a la cuota — <span id="ratioLabel">30</span>%</label>
+      <div class="range-row">
+        <input type="range" id="ratioRange" min="15" max="45" value="30" step="1">
+      </div>
+      <div class="field-hint">No hay una cifra fija de ASFI para crédito vehicular (sí existe para vivienda de interés social). 30% es el criterio de riesgo más usado en la banca boliviana — ajústalo si tu banco te da otro número.</div>
+
+      <div class="adv-toggle" id="advToggle">⚙ Opciones avanzadas (TRe, deudas, co-deudor) ▾</div>
+      <div class="adv-body" id="advBody">
+        <label>Tasa de Referencia (TRe) vigente — <span id="treLabel">3.65</span>%</label>
+        <div class="range-row">
+          <input type="range" id="treRange" min="0" max="10" value="3.65" step="0.05">
+        </div>
+        <div class="field-hint">Valor MN publicado por el BCB en septiembre 2026. Se usa para las tasas variables después del periodo promocional (Unión y BNB). Verifícala en bcb.gob.bo antes de usar cifras reales.</div>
+
+        <label for="otherDebts">Otras cuotas/deudas mensuales actuales (Bs)</label>
+        <input type="number" id="otherDebts" min="0" step="50" value="0">
+        <div class="field-hint">Se suma a la cuota del vehículo para calcular el ingreso mínimo necesario.</div>
+
+        <div class="toggle-row">
+          <label style="margin:0;">Aplicar con co-deudor (suma 2 ingresos)</label>
+          <div class="switch" id="codeudorSwitch"></div>
+        </div>
+        <div class="field-hint" id="codeudorHint">Solo Banco Unión menciona explícitamente esta opción en su material.</div>
+      </div>
+    </div>
+
+    <!-- ============ RESULTS ============ -->
+    <div>
+      <div class="summary-bar" id="summaryBar"></div>
+      <div id="workerAlert"></div>
+      <div id="bankCards"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="wrap">
+  <div><strong>Sobre este simulador:</strong> herramienta educativa e independiente, no afiliada oficialmente a Quantum Motors S.A. ni a las entidades financieras. Tasas, plazos, precios de vehículos y requisitos se tomaron del material promocional de Quantum (septiembre 2026) y de fuentes públicas de cada banco; todos cambian con el tiempo — confírmalos siempre con la entidad antes de decidir.</div>
+  <div class="fine">El cálculo de "ingreso mínimo" es una estimación basada en un porcentaje de endeudamiento configurable, no una decisión oficial de ningún banco. La aprobación final depende del análisis de riesgo propio de cada entidad, historial crediticio, garantías y otros factores no capturados aquí.</div>
+  <div class="fine">Nota sobre Banco Económico: su material promocional muestra dos tasas distintas en la misma pieza ("7% el primer año" y "11,5% anual fija"); se muestran ambas cifras tal como aparecen, con esa inconsistencia señalada — confirma con el banco cuál aplica.</div>
+  <div class="fine">Nota sobre jubilados/rentistas: en Bolivia sí pueden acceder a crédito (evaluados por capacidad de pago y garantías, con límites de edad ligados al seguro de desgravamen según entidad), pero ninguno de los 5 bancos aquí listados lo menciona explícitamente en su material — conviene confirmarlo directamente en sucursal.</div>
+</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+const VEHICLES = [
+  {id:'e4', name:'Quantum E4 Montañero', price:80100},
+  {id:'nexusplus', name:'Quantum Nexus Plus', price:151800},
+  {id:'equte', name:'Quantum Nexus E-Qute', price:223600},
+  {id:'moto', name:'Moto/Scooter eléctrico (Yadea, Flasride, Troper)', price:15000},
+  {id:'custom', name:'Otro / precio personalizado', price:60000},
+];
+
+const BANKS = [
+  {
+    id:'union', name:'Banco Unión', color:'#123B7A',
+    type:'tiered', promoRate:6.19, promoMonths:18, postRateBase:7.59, usesTRE:true,
+    financingPct:90, maxLoanAmount:null, maxTermYears:10,
+    workerNote:'Explícitamente para dependientes e independientes.',
+    requirements:[
+      'Carnet de identidad del titular (o co-deudor, si corresponde)',
+      '3 boletas de pago actualizadas',
+      'Certificado de trabajo (dependientes)',
+      'Estado de ahorro en la Gestora',
+      'Respaldo de deudas',
+      'Carta proforma del vehículo',
+    ],
+    independienteNote:'El material no detalla el equivalente para independientes al "certificado de trabajo"; usualmente se solicita NIT y respaldo de ingresos del negocio — confirmar en sucursal.',
+    jubiladoMentioned:false,
+  },
+  {
+    id:'bnb', name:'BNB', color:'#1E9E5A',
+    type:'tiered', promoRate:6.19, promoMonths:24, postRateBase:7.59, usesTRE:true,
+    financingPct:85, maxLoanAmount:null, maxTermYears:10,
+    workerNote:'No distingue tipo de trabajador en el flyer.',
+    requirements:[
+      'Carnet de identidad del titular',
+      '3 boletas de pago actualizadas',
+      'Certificado de trabajo (dependientes)',
+      'Estado de ahorro en la Gestora',
+      'Respaldo de patrimonio',
+      'Carta proforma del vehículo',
+    ],
+    independienteNote:'Igual que Unión, no especifica el reemplazo del certificado de trabajo para independientes — confirmar en sucursal.',
+    jubiladoMentioned:false,
+  },
+  {
+    id:'biocredito', name:'BiCrédito (BancoComunidad)', color:'#0EA894',
+    type:'fixed', fixedRate:11.5,
+    financingPct:null, maxLoanAmount:78000, maxTermYears:3,
+    workerNote:'No distingue tipo de trabajador en el flyer.',
+    requirements:[
+      'Apertura de caja de ahorros en moneda nacional',
+      'Fotocopia de planes de pago de otras obligaciones (si corresponde)',
+      'Respaldo en copias del patrimonio (RUAT, impuesto o vista rápida de inmueble)',
+      'Póliza de importación (proporcionada por Quantum)',
+      'Factura comercial (proporcionada por Quantum)',
+      'Ficha técnica del producto',
+    ],
+    independienteNote:null,
+    jubiladoMentioned:false,
+  },
+  {
+    id:'economico', name:'Banco Económico', color:'#C4523F',
+    type:'fixed', fixedRate:7, fixedRateAlt:11.5,
+    rateConflict:true,
+    financingPct:null, maxLoanAmount:78000, maxTermYears:3,
+    workerNote:'No distingue tipo de trabajador en el flyer.',
+    requirements:[
+      'Copia de las últimas 3 boletas de pago',
+      'Extracto de la Gestora',
+      'Fotocopia de CI del titular y cónyuge',
+      'Póliza de importación (proporcionada por Quantum)',
+      'Factura comercial (proporcionada por Quantum)',
+      'Ficha técnica del producto',
+    ],
+    independienteNote:null,
+    jubiladoMentioned:false,
+  },
+  {
+    id:'ecofuturo', name:'Banco Pyme Ecofuturo', color:'#E8942A',
+    type:'fixed', fixedRate:10,
+    financingPct:80, maxLoanAmount:null, maxTermYears:8,
+    workerNote:'Único que detalla requisitos específicos para independientes.',
+    requirements:[
+      'Boletas de pago (3 a 6 meses)',
+      'Extracto de la AFP/Gestora',
+      'Mínimo 1 año de antigüedad laboral',
+    ],
+    independienteRequirements:[
+      'Factura de luz (domicilio o negocio)',
+      'NIT y licencia de funcionamiento',
+      'Formulario correspondiente (200/400)',
+    ],
+    salaryStated:{min:4250,max:4500},
+    jubiladoMentioned:false,
+  },
+];
+
+/* ---------------- HELPERS ---------------- */
+const fmt = n => 'Bs ' + Math.round(n).toLocaleString('es-BO');
+const fmtPct = n => n.toFixed(2).replace(/\.00$/,'') + '%';
+
+function pmt(principal, annualRatePct, nMonths){
+  if(nMonths<=0) return 0;
+  const r = annualRatePct/100/12;
+  if(r===0) return principal/nMonths;
+  return principal * r / (1 - Math.pow(1+r, -nMonths));
+}
+function balanceAfter(principal, annualRatePct, payment, nMonthsElapsed){
+  const r = annualRatePct/100/12;
+  if(r===0) return Math.max(0, principal - payment*nMonthsElapsed);
+  const grown = principal*Math.pow(1+r, nMonthsElapsed);
+  const paid = payment*((Math.pow(1+r,nMonthsElapsed)-1)/r);
+  return Math.max(0, grown-paid);
+}
+
+/* ---------------- STATE ---------------- */
+let state = {
+  vehicleId:'e4',
+  price:80100,
+  worker:'dependiente',
+  plazoYears:7,
+  ratio:30,
+  tre:3.65,
+  otherDebts:0,
+  codeudor:false,
+  openDetails:{},
+};
+
+/* ---------------- RENDER: CONTROLS ---------------- */
+function initControls(){
+  const vSel = document.getElementById('vehicleSelect');
+  VEHICLES.forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value=v.id; opt.textContent=`${v.name} — ${fmt(v.price)}`;
+    vSel.appendChild(opt);
+  });
+  vSel.value = state.vehicleId;
+  vSel.addEventListener('change', ()=>{
+    state.vehicleId = vSel.value;
+    const v = VEHICLES.find(x=>x.id===state.vehicleId);
+    state.price = v.price;
+    document.getElementById('priceInput').value = v.price;
+    document.getElementById('vehicleHint').textContent = v.id==='custom' || v.id==='moto'
+      ? 'Precio de referencia editable — escribe el valor real cotizado.'
+      : `Precio referencial Quantum (verificar vigencia en tuquantum.com).`;
+    render();
+  });
+  document.getElementById('vehicleHint').textContent = 'Precio referencial Quantum (verificar vigencia en tuquantum.com).';
+
+  const priceInput = document.getElementById('priceInput');
+  priceInput.value = state.price;
+  priceInput.addEventListener('input', ()=>{
+    state.price = Math.max(0, Number(priceInput.value)||0);
+    render();
+  });
+
+  document.querySelectorAll('#workerSeg button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#workerSeg button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.worker = btn.dataset.w;
+      render();
+    });
+  });
+
+  const plazoRange = document.getElementById('plazoRange');
+  plazoRange.addEventListener('input', ()=>{
+    state.plazoYears = Number(plazoRange.value);
+    document.getElementById('plazoLabel').textContent = state.plazoYears;
+    render();
+  });
+
+  const ratioRange = document.getElementById('ratioRange');
+  ratioRange.addEventListener('input', ()=>{
+    state.ratio = Number(ratioRange.value);
+    document.getElementById('ratioLabel').textContent = state.ratio;
+    render();
+  });
+
+  document.getElementById('advToggle').addEventListener('click', ()=>{
+    const body = document.getElementById('advBody');
+    body.classList.toggle('open');
+    document.getElementById('advToggle').textContent = '⚙ Opciones avanzadas (TRe, deudas, co-deudor) ' + (body.classList.contains('open')?'▴':'▾');
+  });
+
+  const treRange = document.getElementById('treRange');
+  treRange.addEventListener('input', ()=>{
+    state.tre = Number(treRange.value);
+    document.getElementById('treLabel').textContent = state.tre.toFixed(2);
+    render();
+  });
+
+  document.getElementById('otherDebts').addEventListener('input', (e)=>{
+    state.otherDebts = Math.max(0, Number(e.target.value)||0);
+    render();
+  });
+
+  const codeudorSwitch = document.getElementById('codeudorSwitch');
+  codeudorSwitch.addEventListener('click', ()=>{
+    state.codeudor = !state.codeudor;
+    codeudorSwitch.classList.toggle('on', state.codeudor);
+    render();
+  });
+}
+
+/* ---------------- COMPUTE PER BANK ---------------- */
+function computeBank(bank){
+  const termMonths = Math.min(state.plazoYears, bank.maxTermYears) * 12;
+  const termCapped = state.plazoYears > bank.maxTermYears;
+
+  let loanAmount, downPayment;
+  if(bank.financingPct){
+    loanAmount = state.price * bank.financingPct/100;
+    downPayment = state.price - loanAmount;
+  } else if(bank.maxLoanAmount){
+    loanAmount = Math.min(state.price, bank.maxLoanAmount);
+    downPayment = Math.max(0, state.price - loanAmount);
+  } else {
+    loanAmount = state.price; downPayment = 0;
+  }
+
+  let cuota1, cuota2=null, promoMonths=null;
+  if(bank.type==='tiered'){
+    promoMonths = Math.min(bank.promoMonths, termMonths);
+    cuota1 = pmt(loanAmount, bank.promoRate, termMonths);
+    const remaining = termMonths - promoMonths;
+    if(remaining>0){
+      const bal = balanceAfter(loanAmount, bank.promoRate, cuota1, promoMonths);
+      const rate2 = bank.postRateBase + (bank.usesTRE? state.tre:0);
+      cuota2 = pmt(bal, rate2, remaining);
+    }
+  } else {
+    cuota1 = pmt(loanAmount, bank.fixedRate, termMonths);
+  }
+
+  const worstCuota = Math.max(cuota1, cuota2||0);
+  const divisor = state.codeudor && bank.id==='union' ? 2 : 1;
+  const minIncome = ((worstCuota + state.otherDebts) / (state.ratio/100)) / divisor;
+
+  return {bank, termMonths, termCapped, loanAmount, downPayment, cuota1, cuota2, promoMonths, worstCuota, minIncome};
+}
+
+/* ---------------- RENDER: SUMMARY + CARDS ---------------- */
+function render(){
+  const results = BANKS.map(computeBank).sort((a,b)=>a.minIncome-b.minIncome);
+  const best = results[0];
+
+  document.getElementById('heroCuota').textContent = fmt(best.worstCuota) + '/mes';
+  document.getElementById('heroIngreso').textContent = fmt(best.minIncome);
+  document.getElementById('heroBanco').textContent = best.bank.name;
+
+  const summaryBar = document.getElementById('summaryBar');
+  summaryBar.innerHTML = `
+    <div class="summary-card highlight">
+      <div class="lab">Opción más accesible</div>
+      <div class="val">${best.bank.name}</div>
+      <div class="sub">Ingreso líquido mínimo estimado: ${fmt(best.minIncome)}</div>
+    </div>
+    <div class="summary-card">
+      <div class="lab">Monto a financiar (esta opción)</div>
+      <div class="val">${fmt(best.loanAmount)}</div>
+      <div class="sub">Inicial requerida: ${fmt(best.downPayment)}</div>
+    </div>
+    <div class="summary-card">
+      <div class="lab">Plazo aplicado</div>
+      <div class="val">${(best.termMonths/12).toFixed(best.termMonths%12===0?0:1)} años</div>
+      <div class="sub">${best.termCapped? 'Ajustado al máximo de esta entidad':'Según tu selección'}</div>
+    </div>
+  `;
+
+  renderWorkerAlert();
+  renderBankCards(results);
+}
+
+function renderWorkerAlert(){
+  const el = document.getElementById('workerAlert');
+  if(state.worker==='jubilado'){
+    el.innerHTML = `<div class="alert amber">
+      <div>⚠</div>
+      <div><strong>Jubilados/rentistas:</strong> en Bolivia sí es posible acceder a crédito — se evalúa por capacidad de pago (la renta cuenta como ingreso verificable) y garantías, generalmente con límite de edad al vencimiento del crédito ligado al seguro de desgravamen (rondando 70–75 años según entidad). Ninguno de los 5 bancos de este flyer lo menciona explícitamente, así que las cifras de abajo son orientativas: confirma en sucursal si tu edad y el plazo elegido califican.</div>
+    </div>`;
+  } else if(state.worker==='independiente'){
+    el.innerHTML = `<div class="alert teal">
+      <div>ℹ</div>
+      <div><strong>Independiente:</strong> solo Banco Pyme Ecofuturo detalla requisitos específicos para independientes en el material (factura de luz, NIT, licencia de funcionamiento). Para los demás bancos, el documento equivalente al "certificado de trabajo" no está especificado — confírmalo con cada entidad.</div>
+    </div>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function renderBankCards(results){
+  const container = document.getElementById('bankCards');
+  container.innerHTML = '';
+  results.forEach((r,idx)=>{
+    const b = r.bank;
+    const card = document.createElement('div');
+    card.className = 'bank-card' + (idx===0?' best':'');
+
+    let rateDisplay, rateFoot;
+    if(b.type==='tiered'){
+      rateDisplay = `${fmtPct(b.promoRate)} <span style="font-size:12px;color:var(--ink-soft);font-weight:500;">→ ${fmtPct(b.postRateBase)}+TRe</span>`;
+      rateFoot = `Fijo ${b.promoMonths} meses, luego variable`;
+    } else if(b.rateConflict){
+      rateDisplay = `${fmtPct(b.fixedRate)} <span style="font-size:12px;color:var(--red);font-weight:700;">*</span>`;
+      rateFoot = `Flyer también muestra ${fmtPct(b.fixedRateAlt)} — inconsistencia, confirmar`;
+    } else {
+      rateDisplay = fmtPct(b.fixedRate);
+      rateFoot = 'Fijo durante todo el plazo';
+    }
+
+    const cuotaDisplay = r.cuota2
+      ? `${fmt(r.cuota1)} <span style="font-size:12px;color:var(--ink-soft);font-weight:500;">→ ${fmt(r.cuota2)}</span>`
+      : fmt(r.cuota1);
+    const cuotaFoot = r.cuota2 ? `Cuota promo / cuota post-promo (con TRe ${state.tre}%)` : 'Cuota fija mensual';
+
+    let reqListHtml = `<ul class="reqs">${b.requirements.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+    let workerExtra = '';
+    if(state.worker==='independiente' && b.independienteRequirements){
+      workerExtra = `<div class="info-note"><strong>Además, para independientes:</strong><ul class="reqs" style="margin-top:6px;">${b.independienteRequirements.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+    } else if(state.worker==='independiente' && b.independienteNote){
+      workerExtra = `<div class="info-note">${b.independienteNote}</div>`;
+    } else if(state.worker==='jubilado'){
+      workerExtra = `<div class="flag-note">No especificado para jubilados en el material de este banco — confirmar elegibilidad y límite de edad en sucursal.</div>`;
+    }
+
+    let salaryStatedHtml = '';
+    if(b.salaryStated){
+      salaryStatedHtml = `<div class="info-note">El material de ${b.name} declara un salario mínimo requerido de referencia: Bs ${b.salaryStated.min.toLocaleString('es-BO')} a Bs ${b.salaryStated.max.toLocaleString('es-BO')} (dato propio del flyer, útil como contraste con el cálculo de arriba).</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="bank-head">
+        <div class="bank-name-row">
+          <div class="bank-swatch" style="background:${b.color}"></div>
+          <div class="bank-name">${b.name}</div>
+          ${idx===0?'<span class="badge">Más accesible</span>':''}
+          ${b.rateConflict?'<span class="badge warn">Tasa a confirmar</span>':''}
+        </div>
+      </div>
+      <div class="bank-metrics">
+        <div class="metric">
+          <div class="lab">Tasa de interés</div>
+          <div class="val small">${rateDisplay}</div>
+          <div class="foot">${rateFoot}</div>
+        </div>
+        <div class="metric">
+          <div class="lab">Cuota mensual</div>
+          <div class="val small">${cuotaDisplay}</div>
+          <div class="foot">${cuotaFoot}</div>
+        </div>
+        <div class="metric">
+          <div class="lab">Inicial / enganche</div>
+          <div class="val">${fmt(r.downPayment)}</div>
+          <div class="foot">${b.financingPct? `Financia hasta ${b.financingPct}%` : `Financia máx. ${fmt(b.maxLoanAmount)}`}</div>
+        </div>
+        <div class="metric">
+          <div class="lab">Ingreso líquido mínimo</div>
+          <div class="val" style="color:var(--teal-dark)">${fmt(r.minIncome)}</div>
+          <div class="foot">Al ${state.ratio}% de endeudamiento${state.codeudor && b.id==='union' ? ' · repartido en 2 titulares':''}</div>
+        </div>
+      </div>
+      <div class="bank-detail-toggle" data-id="${b.id}">Ver requisitos y notas ▾</div>
+      <div class="bank-detail" id="detail-${b.id}">
+        <div class="detail-grid">
+          <div>
+            <h4>Requisitos (según material Quantum)</h4>
+            ${reqListHtml}
+          </div>
+          <div>
+            <h4>Notas para tu perfil</h4>
+            ${workerExtra || '<div class="info-note">Sin notas adicionales para este perfil.</div>'}
+            ${salaryStatedHtml}
+            <div class="field-hint" style="margin-top:10px;">Plazo máximo de esta entidad: ${b.maxTermYears} años.${r.termCapped? ' Tu plazo elegido se ajustó a este máximo.':''}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.querySelectorAll('.bank-detail-toggle').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      const id = t.dataset.id;
+      const detail = document.getElementById('detail-'+id);
+      const open = detail.classList.toggle('open');
+      t.textContent = 'Ver requisitos y notas ' + (open?'▴':'▾');
+    });
+  });
+}
+
+initControls();
+render();
+</script>
+</body>
+</html>
